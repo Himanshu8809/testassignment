@@ -50,7 +50,7 @@ const HollowRoom = () => {
           const raycaster = new THREE.Raycaster();
           raycaster.setFromCamera({ x: mouseX, y: mouseY }, camera);
 
-          const intersects = raycaster.intersectObjects(scene.children, true);
+          const intersects = raycaster.intersectObjects([model], true);
           if (intersects.length > 0) {
             selectedObject = intersects[0].object.parent;
           }
@@ -73,7 +73,7 @@ const HollowRoom = () => {
                    
                    targetPosition.copy(selectedObject.position).sub(drageoffset);
                    targetPosition.y= selectedObject.position.y;
-                    selectedObject.position.lerp(targetPosition, lerpFactor);
+                    selectedObject.position.copy(targetPosition);
                   }
             }
         }
