@@ -5,10 +5,14 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 const HollowRoom = () => {
   const canvasRef = useRef(null);
+  const sceneRef = useRef(null);
+  let modelss = null;
 
   useEffect(() => {
     // Scene
+   
     const scene = new THREE.Scene();
+    sceneRef.current = scene;
     const drageoffset = new THREE.Vector3();
     const targetPosition = new THREE.Vector3();
     const lerpFactor = 0.1; // Adjust the lerp factor for smoother movement
@@ -21,23 +25,29 @@ const HollowRoom = () => {
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
+    const existingCanvas = canvasRef.current.querySelector('canvas');
+
+    if (existingCanvas) {
+      canvasRef.current.removeChild(existingCanvas);
+    }
     canvasRef.current.appendChild(renderer.domElement);
 
     // OrbitControls
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
+    controls.enableDamping = false;
     let selectedObject = null;
     var room = null;
     var  floor = null;
 
     // Load GLB model
     const loader = new GLTFLoader();
-    const modelUrl = '/d68ec862-e80f-4a4a-936b-4443e4f4b719.glb';
+    const modelUrl = '/model1.glb';
     loader.load(
       modelUrl,
       function (gltf) {
         const model = gltf.scene;
-        model.position.set(0, -0.1, 0); // Set initial position
+        modelss = gltf.scene;
+        model.position.set(0, -1.5, 0); // Set initial position
         scene.add(model);
 
         // Event listeners for drag-and-drop
@@ -94,9 +104,9 @@ const HollowRoom = () => {
     );
 
     // Room dimensions
-    const roomWidth = 8;
+    const roomWidth = 10;
     const roomHeight = 3;
-    const roomDepth = 6;
+    const roomDepth = 7;
 
     // Room geometry
     const roomGeometry = new THREE.BoxGeometry(roomWidth, roomHeight, roomDepth);
@@ -122,8 +132,11 @@ const HollowRoom = () => {
     scene.add(floor);
 
     // Light
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
     scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight( 0xffffff, 0.9 );
+    directionalLight.position.set(0, 10, 0);
+    scene.add( directionalLight );
 
     // Resize event listener
     window.addEventListener('resize', () => {
@@ -161,8 +174,23 @@ const HollowRoom = () => {
       });
     };
   }, []);
+  const handleDeleteModel = () => {
+    const scene = sceneRef.current;
+    if (scene && scene.children.length > 0 && modelss != null) {
+      const modelIndex = scene.children.findIndex(child => child === modelss);
+      if (modelIndex !== -1) {
+        scene.remove(modelss);
+        modelss = null;
+      }
+    }
+  };
 
-  return <div ref={canvasRef} />;
+  return (
+    <div>
+      <div ref={canvasRef} />
+      <button onClick={handleDeleteModel}>Delete Model</button>
+    </div>
+  );
 };
 
 export default HollowRoom;
